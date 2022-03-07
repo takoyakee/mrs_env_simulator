@@ -1,0 +1,6 @@
+
+
+<launch>
+	<include file="$(find mrs_env_simulator)/launch/includes/initconfig/three_initposes.launch"/>
+	<include file="$(find mrs_env_simulator)/launch/includes/map_merge.launch"/>
+</launch>

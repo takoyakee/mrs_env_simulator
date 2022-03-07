@@ -1,0 +1,77 @@
+
+<!-- Launches Kobuki Gazebo simulation in an empty world -->
+<launch>
+
+    <!-- start Gazebo with an empty world, but change the worldname to my predefined world-->
+
+	<env name="GAZEBO_MODEL_PATH" value="$(find mrs_env_simulator)/gazebo/models"/>
+
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="use_sim_time" value="true"/>
+        <arg name="debug" value="false"/>
+		<arg name="gui" value="false"/>
+        <arg name="world_name" value="$(find mrs_env_simulator)/gazebo/worlds/maze.sdf"/>
+    </include>
+
+	<!-- spawn robot 1-->
+	<group ns="/robot_1">
+		<include file="$(find mrs_env_simulator)/launch/includes/robot_launch.xml">
+			<arg name="robot_name" value="robot_1"/>
+			<arg name="init_pose" value="-x $(env r_1_x) -y $(env r_1_y) -z 0.0"/>
+		</include>
+		<include file="$(find mrs_env_simulator)/launch/includes/navigation.launch"> 
+			<arg name="namespace" value="robot_1"/>
+		</include> 
+	</group>
+
+	<!-- spawn robot 2-->
+	<group ns="/robot_2">
+		<include file="$(find mrs_env_simulator)/launch/includes/robot_launch.xml">
+			<arg name="robot_name" value="robot_2"/>
+			<!-- Need to specify robots initial relative position-->
+			<arg name="init_pose" value="-x $(env r_2_x) -y $(env r_2_y) -z 0.0 -R 0 -P 0 -Y $(env r_2_yaw)"/>
+		</include>
+		<include file="$(find mrs_env_simulator)/launch/includes/navigation.launch">
+			<arg name="namespace" value="robot_2"/>
+		</include> 
+	</group>
+
+    	<!-- spawn robot 2-->
+	<group ns="/robot_3">
+		<include file="$(find mrs_env_simulator)/launch/includes/robot_launch.xml">
+			<arg name="robot_name" value="robot_3"/>
+			<!-- Need to specify robots initial relative position-->
+			<arg name="init_pose" value="-x $(env r_3_x) -y $(env r_3_y) -z 0.0 -R 0 -P 0 -Y $(env r_3_yaw)"/>
+		</include>
+		<include file="$(find mrs_env_simulator)/launch/includes/navigation.launch"> 
+			<arg name="namespace" value="robot_3"/>
+		</include> 
+	</group>
+r_2_X
+
+	<!-- transformation between robots https://automaticaddison.com/coordinate-frames-and-transforms-for-ros-based-mobile-robots/-->
+	<node pkg="tf2_ros" type="static_transform_publisher" name="robot2_to_robot1" args="$(env r2_to_1_x) $(env r2_to_1_y) 0 $(env r_2_yaw) 0 0  /robot_1/map /robot_2/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="robot3_to_robot1" args="$(env r3_to_1_x) $(env r3_to_1_y) 0 $(env r_3_yaw) 0 0 /robot_1/map /robot_3/map" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="robot1_to_world" args="0 0 0 0 0 0 1 /robot_1/map /world" />
+
+	<!---->
+
+<!-- RRT: run RViz node (visualization) 
+<node pkg="rviz" type="rviz" name="rviz" args="-d $(find multi_kobuki_gazebo)/launch/rviz_config/three.rviz">
+	<remap from="move_base_simple/goal" to="robot_1/move_base_simple/goal"/>
+</node>s-->
+
+	<node pkg="map_server" name="map_server" type="map_server" args="$(find mrs_env_simulator)/maps/maze.yaml">
+		<param name="frame_id"  value="robot_1/map"/>
+        <remap from="map" to="mapserver"/>
+	</node>
+
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find mrs_env_simulator)/config/rviz/three_config.rviz" respawn="true">
+		<!-- <remap from="robot_1/move_base_node/current_goal" to="robot_1/move_base_simple/goal"/> -->
+	</node> 
+ 
+<!-- SELF: run RViz node (visualization)-->
+
+
+
+</launch>
